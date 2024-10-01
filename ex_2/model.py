@@ -53,6 +53,8 @@ class VanillaCNN(nn.Module):
         super().__init__()
         # TODO: Implement the model architecture
         self.dummy_param = nn.Parameter(torch.empty(1))
+
+        #self.model = 
         pass
 
     def forward(self, x):
@@ -61,10 +63,10 @@ class VanillaCNN(nn.Module):
 
 
 def get_representation_layer(representation):
-    assert representation in ["raw", "IQU", "DOP+AOP", "IQU+DOP+AOP"]
+    assert representation in ["raw", "IQU", "DOP+AOP", "IQU+DOP+AOP"] #Smart!
     if representation == "raw":
         channel_representation = 4
-        representation_layer = nn.Identity()
+        representation_layer = nn.Identity() #Return data as is.
     elif representation == "IQU":
         channel_representation = 3
 
@@ -74,9 +76,16 @@ def get_representation_layer(representation):
 
             def forward(self, x):
                 # TODO: Implement the conversion from polarized intensity to IQU
-                pass
+                #assuming that x is a (4, 1) matrix 
+                i0, i45, i90, i135 = x
+                
+                Itot = i0 + i45 + i90 + i135
+                I = 0.5*(i0 + i45 + i90 +i135)
+                Q = i0 - i90
+                U = i45 - i135
+                return 
 
-        representation_layer = PolCh2IQU()
+        representation_layer = PolCh2IQU() 
     elif representation == "DOP+AOP":
         channel_representation = 2
 
@@ -86,7 +95,13 @@ def get_representation_layer(representation):
 
             def forward(self, x):
                 # TODO: Implement the conversion from polarized intensity to DOP and AOP
-                pass
+                i0, i45, i90, i135 = x
+                Itot = i0 + i45 + i90 + i135
+                Q = i0 - i90
+                U = i45 - i135
+                DOP = torch.sqrt(Q**2 + U**2)/Itot
+                AOP = 0.5*torch.atan(U/Q)
+                return
 
         representation_layer = PolCh2DOPAOP()
     elif representation == "IQU+DOP+AOP":
@@ -98,12 +113,20 @@ def get_representation_layer(representation):
 
             def forward(self, x):
                 # TODO: Implement the conversion from polarized intensity to IQU, DOP and AOP
-                pass
+                i0, i45, i90, i135 = x
+                Itot = i0 + i45 + i90 + i135
+
+                I = 0.5*(i0 + i45 + i90 +i135)
+                Q = i0 - i90
+                U = i45 - i135
+
+                DOP = torch.sqrt(Q**2 + U**2)/Itot
+                AOP = 0.5*torch.atan(U/Q)
+                return
 
         representation_layer = PolCh2IQUDOPAOP()
 
     return channel_representation, representation_layer
-
 
 def get_readout_layer(readout, **kwargs):
     assert readout in ["angle", "vector"]
@@ -138,8 +161,13 @@ class PolarSunNet(nn.Module):
     def estimate_angle(self, x):
         return self.get_angle(self.forward(x))
 
-
 if __name__ == "__main__":
-    # model = VanillaCNN(4, 2)
-    # print(model)
-    print(get_readout_layer("classification"))
+    #model = VanillaCNN(4, 2)
+    #print(model)
+    #print(get_readout_layer("classification"))
+    c, b = get_representation_layer("IQU")
+    d = b()
+
+    
+
+    
